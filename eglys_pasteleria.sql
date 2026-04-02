@@ -1,5 +1,6 @@
-
---CREATE DATABASE IF NOT EXISTS eglys_pasteleria;USE eglys_pasteleria;
+-- Base: en Railway suele llamarse "railway"; créala en el panel o usa USE railway;
+-- CREATE DATABASE IF NOT EXISTS eglys_pasteleria;
+-- USE eglys_pasteleria;
 
 -- Tabla de usuarios
 CREATE TABLE IF NOT EXISTS usuarios (
