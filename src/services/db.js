@@ -4,7 +4,9 @@ const mysql = require('mysql2');
 
 function buildPoolConfig() {
   const url =
-    process.env.DATABASE_URL || process.env.MYSQL_URL;
+    process.env.DATABASE_URL ||
+    process.env.MYSQL_URL ||
+    process.env.MYSQL_PUBLIC_URL;
 
   if (url && url.startsWith('mysql')) {
     return url;
@@ -39,10 +41,12 @@ function buildPoolConfig() {
 
   const isLocal =
     !host || host === 'localhost' || host === '127.0.0.1';
+  const isRailwayInternal =
+    typeof host === 'string' && host.includes('railway.internal');
   const forceSsl =
     process.env.DB_SSL === 'true' ||
     process.env.DB_SSL === '1' ||
-    (!isLocal && process.env.DB_SSL !== 'false');
+    (!isLocal && !isRailwayInternal && process.env.DB_SSL !== 'false');
 
   const config = {
     host,
