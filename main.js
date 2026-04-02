@@ -41,7 +41,7 @@ async function registerUser(form){
 
     if(data.success) {
       alert('Cuenta creada con éxito. Ahora inicia sesión.');
-      window.location.href = 'ingreso.html';
+      window.location.href = '/';
       return true;
     } else {
       alert(data.message || 'Error al registrar usuario');
@@ -297,11 +297,11 @@ async function deleteProduct(id){
 
 function logout(){
   clearCurrentUser();
-  window.location.href = 'ingreso.html';
+  window.location.href = '/';
 }
 
 // ---------- proteger páginas que requieren login ----------
-function requireLogin(redirectTo='ingreso.html'){
+function requireLogin(redirectTo='/'){
   const user = getCurrentUser();
   if(!user){ 
     window.location.href = redirectTo; 
@@ -365,7 +365,7 @@ async function addToCart(productId){
   const user = getCurrentUser();
   if(!user) {
     alert('Debes iniciar sesión para agregar productos al carrito');
-    window.location.href = 'ingreso.html';
+    window.location.href = '/';
     return;
   }
 
@@ -458,7 +458,7 @@ async function confirmOrder(){
   const user = getCurrentUser();
   if(!user){ 
     alert('Debes iniciar sesión para confirmar pedido'); 
-    window.location.href = 'ingreso.html'; 
+    window.location.href = '/'; 
     return; 
   }
 
@@ -490,5 +490,5 @@ async function confirmOrder(){
 // logout simple
 function logout(){
   clearCurrentUser();
-  window.location.href = 'ingreso.html';
+  window.location.href = '/';
 }

@@ -11,8 +11,14 @@ const PORT = Number(process.env.PORT) || 3000;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Servir todos los archivos estáticos (HTML, CSS, JS, imágenes)
-app.use(express.static(path.join(__dirname)));
+// Raíz = ingreso (antes express.static servía index.html y tapaba esta ruta)
+app.get('/index.html', (req, res) => res.redirect(301, '/'));
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'ingreso.html'));
+});
+
+// Servir estáticos sin index.html automático en /
+app.use(express.static(path.join(__dirname), { index: false }));
 
 // Middleware para CORS (permitir requests del frontend)
 app.use((req, res, next) => {
@@ -361,11 +367,6 @@ app.delete('/api/admin/productos/:id', async (req, res) => {
     console.error('Error al eliminar producto:', error);
     res.status(500).json({ success: false, message: 'Error al eliminar producto' });
   }
-});
-
-// Ruta principal
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'ingreso.html'));
 });
 
 app.listen(PORT, () => {
