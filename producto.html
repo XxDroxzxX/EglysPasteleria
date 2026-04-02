@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Tortas - Eglys Pastelería</title>
+  <link rel="stylesheet" href="estilos.css"/>
+  <link rel="stylesheet" href="estilos-animados.css"/>
+</head>
+<body onload="requireLogin(); displayUserInfo(); renderProducts('listaProductos','torta')">
+  <!-- Elementos flotantes de tortas -->
+  <div class="floating-elements">
+    <div class="torta-float">🍰</div>
+    <div class="torta-float">🎂</div>
+    <div class="torta-float">🧁</div>
+    <div class="torta-float">🍰</div>
+    <div class="torta-float">🎂</div>
+    <div class="torta-float">🧁</div>
+  </div>
+
+  <div class="wrapper">
+    <div class="header">
+        <a href="servicio.html" class="logo-link">
+            <img class="logo" src="img/Eglys Escalante.png" alt="Eglys Escalante">
+        </a>
+      <div>
+        <h2>Tortas</h2>
+        <div class="subtitle">Cada torta, una dulce tentación</div>
+      </div>
+      <div id="userInfo"></div>
+    </div>
+
+    <div id="listaProductos" class="products"></div>
+
+    <div class="card center">
+      <a class="link-btn" href="servicio.html">Volver</a>
+      <a class="link-btn" href="detalle-pedido.html">Ver Pedido</a>
+    </div>
+  </div>
+
+  <script src="main.js"></script>
+</body>
+</html>
