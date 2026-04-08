@@ -278,6 +278,85 @@ app.post('/api/pedidos', async (req, res) => {
   }
 });
 
+// GET /api/pedidos/generar-mensaje/:usuario_id - Generar mensaje para WhatsApp
+app.get('/api/pedidos/generar-mensaje/:usuario_id', async (req, res) => {
+  try {
+    const { usuario_id } = req.params;
+
+    // Obtener usuario
+    const [users] = await db.execute(
+      'SELECT nombres, apellidos, telefono, direccion FROM usuarios WHERE id = ?',
+      [usuario_id]
+    );
+
+    if (users.length === 0) {
+      return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
+    }
+
+    const user = users[0];
+
+    // Obtener items del carrito con detalles
+    const [items] = await db.execute(
+      `SELECT c.cantidad, p.nombre, p.precio,
+              (c.cantidad * p.precio) as subtotal
+       FROM carrito c
+       INNER JOIN productos p ON c.producto_id = p.id
+       WHERE c.usuario_id = ?
+       ORDER BY p.nombre`,
+      [usuario_id]
+    );
+
+    if (items.length === 0) {
+      return res.status(400).json({ success: false, message: 'Carrito vacío' });
+    }
+
+    // Calcular total
+    const total = items.reduce((sum, item) => sum + parseFloat(item.subtotal), 0);
+
+    // Generar mensaje formateado
+    let mensaje = `*Hola, soy ${user.nombres} ${user.apellidos}*\n\n`;
+    mensaje += `*📋 Detalle de mi Pedido:*\n`;
+    mensaje += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
+
+    items.forEach((item, index) => {
+      mensaje += `${index + 1}. ${item.nombre}\n`;
+      mensaje += `   Cantidad: ${item.cantidad}x | Valor: $${parseFloat(item.precio).toLocaleString()}\n`;
+      mensaje += `   Subtotal: $${parseFloat(item.subtotal).toLocaleString()}\n\n`;
+    });
+
+    mensaje += `━━━━━━━━━━━━━━━━━━━━━\n`;
+    mensaje += `*💰 TOTAL: $${total.toLocaleString()}*\n\n`;
+    mensaje += `*📍 Dirección de entrega:*\n`;
+    mensaje += `${user.direccion || 'No especificada'}\n\n`;
+    mensaje += `*📱 Teléfono:*\n`;
+    mensaje += `${user.telefono || 'No especificado'}\n\n`;
+    mensaje += `Confirmo este pedido para mi Pastelería Eglys 🎂`;
+
+    // Número de WhatsApp de la pastelería
+    const whatsappPhone = process.env.WHATSAPP_PHONE_NUMBER || '573015123456';
+
+    // Generar URL de WhatsApp
+    const mensajeEncoded = encodeURIComponent(mensaje);
+    const whatsappUrl = `https://api.whatsapp.com/send?phone=${whatsappPhone}&text=${mensajeEncoded}`;
+
+    res.json({
+      success: true,
+      mensaje: mensaje,
+      whatsappUrl: whatsappUrl,
+      total: total,
+      items: items.map(item => ({
+        nombre: item.nombre,
+        cantidad: item.cantidad,
+        precio: parseFloat(item.precio),
+        subtotal: parseFloat(item.subtotal)
+      }))
+    });
+  } catch (error) {
+    console.error('Error al generar mensaje de WhatsApp:', error);
+    res.status(500).json({ success: false, message: 'Error al generar mensaje' });
+  }
+});
+
 // GET /api/pedidos/:usuario_id - Obtener pedidos del usuario
 app.get('/api/pedidos/:usuario_id', async (req, res) => {
   try {

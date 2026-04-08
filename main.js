@@ -463,27 +463,99 @@ async function confirmOrder(){
   }
 
   try {
+    // Primero, generar el mensaje y obtener la URL de WhatsApp
+    const messageResponse = await fetch(`${API_URL}/pedidos/generar-mensaje/${user.id}`);
+    const messageData = await messageResponse.json();
+
+    if (!messageData.success) {
+      alert(messageData.message || 'Error al generar mensaje de WhatsApp');
+      return;
+    }
+
+    // Mostrar modal con los detalles del pedido y botón para WhatsApp
+    const modal = document.createElement('div');
+    modal.className = 'whatsapp-modal';
+    modal.innerHTML = `
+      <div class="modal-content" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+           background: white; padding: 30px; border-radius: 10px; z-index: 10000; max-width: 500px; max-height: 80vh; 
+           overflow-y: auto; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border: 2px solid #25D366;">
+        <div style="text-align: center; margin-bottom: 20px;">
+          <h3 style="color: #25D366; margin: 0 0 10px 0;">📱 Confirmar Pedido por WhatsApp</h3>
+          <p style="color: #666; margin: 0; font-size: 14px;">Se abrirá un chat con nuestro equipo</p>
+        </div>
+        
+        <div style="background: #f0f0f0; padding: 15px; border-radius: 8px; margin-bottom: 20px; 
+                    max-height: 300px; overflow-y: auto; font-size: 13px; line-height: 1.6; white-space: pre-wrap;">
+          <pre style="margin: 0; font-family: Arial, sans-serif; white-space: pre-wrap; word-wrap: break-word;">
+${messageData.mensaje}
+          </pre>
+        </div>
+        
+        <div style="text-align: center; margin-bottom: 15px;">
+          <div style="display: inline-block; background: #f0f0f0; padding: 10px 15px; border-radius: 5px;">
+            <strong style="color: #25D366; font-size: 18px;">💰 Total: $${messageData.total.toLocaleString()}</strong>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 10px;">
+          <button class="btn" onclick="window.open('${messageData.whatsappUrl}', '_blank'); confirmOrderInDB(${user.id}); closeWhatsAppModal();" 
+                  style="flex: 1; background: #25D366; border: none; color: white; padding: 12px; border-radius: 5px; 
+                          cursor: pointer; font-weight: bold; font-size: 16px;">
+            📤 Enviar por WhatsApp
+          </button>
+          <button onclick="closeWhatsAppModal()" 
+                  style="flex: 1; background: #ccc; border: none; color: #333; padding: 12px; border-radius: 5px; 
+                          cursor: pointer; font-weight: bold; font-size: 16px;">
+            Cancelar
+          </button>
+        </div>
+        
+        <div style="text-align: center; margin-top: 15px; font-size: 12px; color: #999;">
+          <p style="margin: 0;">El pedido se confirmará automáticamente después de enviar el mensaje</p>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+  } catch (error) {
+    console.error('Error:', error);
+    alert('Error de conexión. Verifica que el servidor esté corriendo.');
+  }
+}
+
+// Función auxiliar para cerrar el modal de WhatsApp
+function closeWhatsAppModal() {
+  const modal = document.querySelector('.whatsapp-modal');
+  if (modal) {
+    modal.remove();
+  }
+}
+
+// Función para confirmar el pedido en la base de datos
+async function confirmOrderInDB(userId) {
+  try {
     const response = await fetch(`${API_URL}/pedidos`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        usuario_id: user.id
+        usuario_id: userId
       })
     });
 
     const data = await response.json();
 
     if(data.success) {
-      alert('Pedido confirmado con éxito. ¡Gracias!');
-      window.location.href = 'servicio.html';
+      alert('✅ Pedido confirmado exitosamente. ¡Gracias por tu compra!');
+      setTimeout(() => {
+        window.location.href = 'servicio.html';
+      }, 2000);
     } else {
-      alert(data.message || 'Error al confirmar pedido');
+      console.error('Error al confirmar pedido:', data.message);
     }
   } catch (error) {
     console.error('Error:', error);
-    alert('Error de conexión. Verifica que el servidor esté corriendo.');
   }
 }
 
